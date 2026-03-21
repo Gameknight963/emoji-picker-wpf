@@ -31,4 +31,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="&quot;C:\Program Files\AutoHotkey\Compiler\Ahk2Exe.exe&quot; /in &quot;hotkey.ahk&quot; /out &quot;bin\Debug\net8.0-windows\emoji_hotkey.exe&quot;" />
+  </Target>
+
 </Project>
