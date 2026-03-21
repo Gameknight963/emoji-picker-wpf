@@ -3,9 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
-        Title="Emoji Picker" Height="450" Width="800">
+        Title="Emoji Picker" Height="450" Width="800" KeyDown="Window_KeyDown">
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="401*"/>
+            <ColumnDefinition Width="399*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <!-- Search bar -->
@@ -14,14 +18,14 @@
         </Grid.RowDefinitions>
 
         <!-- Search TextBox -->
-        <TextBox Grid.Row="0" Margin="5" 
+        <TextBox Grid.Row="0" Margin="5,5,5,5" 
                  x:Name="searchBox"
-                 TextChanged="searchBox_TextChanged" />
+                 TextChanged="searchBox_TextChanged" Grid.ColumnSpan="2" />
 
         <!-- Virtualized emoji grid -->
         <ListBox Grid.Row="1" x:Name="emojiView"
                  ItemsSource="{Binding FilteredEmojis}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="emojiView_SelectionChanged">
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="emojiView_SelectionChanged" Grid.ColumnSpan="2">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <vwp:VirtualizingWrapPanel Orientation="Horizontal"/>

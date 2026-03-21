@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
 
 
 namespace emoji_picker_wpf
@@ -20,6 +21,31 @@ namespace emoji_picker_wpf
 
         [DllImport("user32.dll")]
         static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        [DllImport("user32.dll")]
+        static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
+        [DllImport("user32.dll")]
+        static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+        [DllImport("kernel32.dll")]
+        static extern uint GetCurrentThreadId();
+
+        // balls
+        public void ForceForeground()
+        {
+            IntPtr targetHwnd = new WindowInteropHelper(this).Handle;
+            IntPtr foregroundHwnd = GetForegroundWindow();
+
+            uint foregroundThreadId = GetWindowThreadProcessId(foregroundHwnd, IntPtr.Zero);
+            uint appThreadId = GetCurrentThreadId();
+
+            if (foregroundThreadId != appThreadId)
+            {
+                AttachThreadInput(appThreadId, foregroundThreadId, true);
+                SetForegroundWindow(targetHwnd);
+                this.Activate();
+                AttachThreadInput(appThreadId, foregroundThreadId, false);
+            }
+        }
 
         private IntPtr _previousWindow;
 
@@ -39,8 +65,11 @@ namespace emoji_picker_wpf
             if (Emojis == null || EmojiDict == null)
                 throw new InvalidOperationException("Error loading resources");
 
-            this.Activate();
-            searchBox.Focus();
+            Loaded += (s, e) =>
+            {
+                ForceForeground();
+                searchBox.Focus();
+            };
         }
           
         private void InsertEmoji(string emoji)
@@ -63,7 +92,7 @@ namespace emoji_picker_wpf
                 FilteredEmojis.Add(kvp);
             }
         }
-
+        
         private void emojiView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (emojiView.SelectedItem is KeyValuePair<string, Emoji> kvp)
@@ -71,6 +100,11 @@ namespace emoji_picker_wpf
                 InsertEmoji(kvp.Key);
                 this.Close();
             }
+        }
+
+        private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape) this.Close();
         }
     }
 }
