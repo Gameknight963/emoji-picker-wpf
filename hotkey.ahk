@@ -2,6 +2,6 @@
 
 #.::
 {
-    Run "emoji picker wpf.exe"
-    return
+    DllCall("AllowSetForegroundWindow", "Int", -1) 
+    Run("emoji picker wpf.exe")
 }

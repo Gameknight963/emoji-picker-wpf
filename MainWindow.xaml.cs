@@ -38,9 +38,11 @@ namespace emoji_picker_wpf
             DataContext = this;
             if (Emojis == null || EmojiDict == null)
                 throw new InvalidOperationException("Error loading resources");
+
+            this.Activate();
             searchBox.Focus();
         }
-
+          
         private void InsertEmoji(string emoji)
         {
             SetForegroundWindow(_previousWindow);
