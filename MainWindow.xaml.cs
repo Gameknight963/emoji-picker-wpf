@@ -54,6 +54,76 @@ namespace emoji_picker_wpf
 
         public ObservableCollection<KeyValuePair<string, Emoji>> FilteredEmojis { get; private set; }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MARGINS
+        {
+            public int cxLeftWidth;
+            public int cxRightWidth;
+            public int cyTopHeight;
+            public int cyBottomHeight;
+        }
+        public enum AccentState
+        {
+            ACCENT_DISABLED = 0,
+            ACCENT_ENABLE_BLURBEHIND = 3,
+            ACCENT_ENABLE_ACRYLICBLURBEHIND = 4
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct AccentPolicy
+        {
+            public AccentState AccentState;
+            public int AccentFlags;
+            public int GradientColor;
+            public int AnimationId;
+        }
+        [StructLayout(LayoutKind.Sequential)]
+        public struct WindowCompositionAttributeData
+        {
+            public WindowCompositionAttribute Attribute;
+            public IntPtr Data;
+            public int SizeOfData;
+        }
+        public enum WindowCompositionAttribute
+        {
+            WCA_ACCENT_POLICY = 19
+        }
+
+        [DllImport("user32.dll")]
+        internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+        private const int DWMWA_CAPTION_COLOR = 35;
+        private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS pMarInset);
+
+        public void EnableBlur()
+        {
+            WindowInteropHelper windowHelper = new WindowInteropHelper(this);
+            AccentPolicy accent = new AccentPolicy
+            {
+                AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND,
+                GradientColor = 0x01000000
+            };
+
+            int accentStructSize = Marshal.SizeOf(accent);
+            nint accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            WindowCompositionAttributeData data = new WindowCompositionAttributeData
+            {
+                Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY,
+                SizeOfData = accentStructSize,
+                Data = accentPtr
+            };
+
+            SetWindowCompositionAttribute(windowHelper.Handle, ref data);
+            Marshal.FreeHGlobal(accentPtr);
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -64,6 +134,20 @@ namespace emoji_picker_wpf
 
             Loaded += async (s, e) =>
             {
+                WindowInteropHelper windowHelper = new WindowInteropHelper(this);
+                MARGINS margins = new MARGINS { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
+                DwmExtendFrameIntoClientArea(windowHelper.Handle, ref margins);
+                EnableBlur();
+                var hwnd = new WindowInteropHelper(this).Handle;
+
+                // Dark title bar
+                int dark = 1;
+                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
+
+                // Or set a specific caption color (COLORREF = 0x00BBGGRR)
+                int color = 0x00202020; // dark gray
+                DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, ref color, sizeof(int));
+
                 await Task.Run(() =>
                 {
                     EmojiDict = JsonConvert.DeserializeObject<Dictionary<string, Emoji>>(resources.dataByEmoji)!;
@@ -78,6 +162,11 @@ namespace emoji_picker_wpf
                 ForceForeground();
                 this.Topmost = true;
             };
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
         }
 
         private void InsertEmoji(string emoji)
@@ -110,6 +199,24 @@ namespace emoji_picker_wpf
             }
         }
 
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            var source = HwndSource.FromHwnd(new WindowInteropHelper(this).Handle);
+            source.AddHook(WndProc);
+        }
+
+        private const int WM_ERASEBKGND = 0x0014;
+
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if (msg == WM_ERASEBKGND)
+            {
+                handled = true;
+                return new IntPtr(1);
+            }
+            return IntPtr.Zero;
+        }
 
         private void emojiView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

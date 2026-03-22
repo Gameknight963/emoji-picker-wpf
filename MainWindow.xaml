@@ -3,12 +3,15 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
         xmlns:emoji="clr-namespace:Emoji.Wpf;assembly=Emoji.Wpf"
-        Title="Emoji Picker" Height="450" Width="800" KeyDown="Window_KeyDown">
+        Title="Emoji Picker" Height="450" Width="800" KeyDown="Window_KeyDown" Background="Black">
 
-    <Grid>
+    <Grid Background="Transparent">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="401*"/>
-            <ColumnDefinition Width="399*"/>
+            <ColumnDefinition Width="52*"/>
+            <ColumnDefinition Width="110*"/>
+            <ColumnDefinition Width="239*"/>
+            <ColumnDefinition Width="44*"/>
+            <ColumnDefinition Width="355*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -20,7 +23,7 @@
         <!-- Search TextBox -->
         <TextBox Grid.Row="0" Margin="5,5,5,5" 
                  x:Name="searchBox"
-                 TextChanged="searchBox_TextChanged" Grid.ColumnSpan="2" />
+                 TextChanged="searchBox_TextChanged" Grid.ColumnSpan="5" BorderBrush="#00ABADB3" />
 
         <!-- Virtualized emoji grid -->
         <ListBox Grid.Row="1"
@@ -31,29 +34,29 @@
          VirtualizingStackPanel.IsVirtualizing="True"
          VirtualizingStackPanel.VirtualizationMode="Recycling"
          ScrollViewer.IsDeferredScrollingEnabled="True"
-         Grid.ColumnSpan="2">
-    <ListBox.ItemsPanel>
-        <ItemsPanelTemplate>
-            <vwp:VirtualizingWrapPanel Orientation="Horizontal"/>
-        </ItemsPanelTemplate>
-    </ListBox.ItemsPanel>
+         Grid.ColumnSpan="5" Background="Transparent" BorderBrush="#00ABADB3">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <vwp:VirtualizingWrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
 
-    <ListBox.ItemContainerStyle>
-        <Style TargetType="ListBoxItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-        </Style>
-    </ListBox.ItemContainerStyle>
+            <ListBox.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                </Style>
+            </ListBox.ItemContainerStyle>
 
-    <ListBox.ItemTemplate>
-        <DataTemplate>
-            <emoji:TextBlock Text="{Binding Key}" 
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <emoji:TextBlock Text="{Binding Key}" 
                              FontSize="32" 
                              HorizontalAlignment="Center" 
                              VerticalAlignment="Center"
                              ToolTip="{Binding Value.Name}"/>
-        </DataTemplate>
-    </ListBox.ItemTemplate>
-</ListBox>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>
