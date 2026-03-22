@@ -23,32 +23,37 @@
                  TextChanged="searchBox_TextChanged" Grid.ColumnSpan="2" />
 
         <!-- Virtualized emoji grid -->
-        <ListBox Grid.Row="1" x:Name="emojiView"
-                 ItemsSource="{Binding FilteredEmojis}"
-                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="emojiView_SelectionChanged" Grid.ColumnSpan="2">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <vwp:VirtualizingWrapPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
+        <ListBox Grid.Row="1"
+         x:Name="emojiView"
+         ItemsSource="{Binding FilteredEmojis}"
+         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+         SelectionChanged="emojiView_SelectionChanged"
+         VirtualizingStackPanel.IsVirtualizing="True"
+         VirtualizingStackPanel.VirtualizationMode="Recycling"
+         ScrollViewer.IsDeferredScrollingEnabled="True"
+         Grid.ColumnSpan="2">
+    <ListBox.ItemsPanel>
+        <ItemsPanelTemplate>
+            <vwp:VirtualizingWrapPanel Orientation="Horizontal"/>
+        </ItemsPanelTemplate>
+    </ListBox.ItemsPanel>
 
-            <ListBox.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
-                </Style>
-            </ListBox.ItemContainerStyle>
+    <ListBox.ItemContainerStyle>
+        <Style TargetType="ListBoxItem">
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        </Style>
+    </ListBox.ItemContainerStyle>
 
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <!-- Use Emoji.Wpf TextBlock -->
-                    <emoji:TextBlock Text="{Binding Key}" 
-                                     FontSize="32" 
-                                     HorizontalAlignment="Center" 
-                                     VerticalAlignment="Center"
-                                     ToolTip="{Binding Value.Name}"/>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+    <ListBox.ItemTemplate>
+        <DataTemplate>
+            <emoji:TextBlock Text="{Binding Key}" 
+                             FontSize="32" 
+                             HorizontalAlignment="Center" 
+                             VerticalAlignment="Center"
+                             ToolTip="{Binding Value.Name}"/>
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>
     </Grid>
 </Window>

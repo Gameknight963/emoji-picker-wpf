@@ -49,8 +49,8 @@ namespace emoji_picker_wpf
 
         private IntPtr _previousWindow;
 
-        public IReadOnlyList<KeyValuePair<string, Emoji>> Emojis { get; private set; }
-        public IReadOnlyDictionary<string, Emoji> EmojiDict { get; private set; }
+        public IReadOnlyList<KeyValuePair<string, Emoji>> Emojis { get; private set; } = Array.Empty<KeyValuePair<string, Emoji>>();
+        public IReadOnlyDictionary<string, Emoji> EmojiDict { get; private set; } = new Dictionary<string, Emoji>();
 
         public ObservableCollection<KeyValuePair<string, Emoji>> FilteredEmojis { get; private set; }
 
@@ -58,21 +58,28 @@ namespace emoji_picker_wpf
         {
             InitializeComponent();
             _previousWindow = GetForegroundWindow();
-            EmojiDict = JsonConvert.DeserializeObject<Dictionary<string, Emoji>>(resources.dataByEmoji)!;
-            Emojis = new List<KeyValuePair<string, Emoji>>(EmojiDict.ToList());
-            FilteredEmojis = new ObservableCollection<KeyValuePair<string, Emoji>>(Emojis);
+            FilteredEmojis = new ObservableCollection<KeyValuePair<string, Emoji>>();
             DataContext = this;
-            if (Emojis == null || EmojiDict == null)
-                throw new InvalidOperationException("Error loading resources");
+            searchBox.Focus();
 
-            Loaded += (s, e) =>
+            Loaded += async (s, e) =>
             {
+                await Task.Run(() =>
+                {
+                    EmojiDict = JsonConvert.DeserializeObject<Dictionary<string, Emoji>>(resources.dataByEmoji)!;
+                    Emojis = new List<KeyValuePair<string, Emoji>>(EmojiDict.ToList());
+                });
+
+                foreach (KeyValuePair<string, Emoji> kvp in Emojis)
+                {
+                    FilteredEmojis.Add(kvp);
+                }
+
                 ForceForeground();
-                searchBox.Focus();
                 this.Topmost = true;
             };
         }
-          
+
         private void InsertEmoji(string emoji)
         {
             SetForegroundWindow(_previousWindow);
@@ -86,14 +93,24 @@ namespace emoji_picker_wpf
         {
             FilteredEmojis.Clear();
 
-            foreach (var kvp in string.IsNullOrWhiteSpace(searchBox.Text)
+            string search = searchBox.Text?.Trim().ToLower() ?? "";
+
+            Dictionary<string, Emoji> priorityKeys = new();
+            if (searchBox.Text == "v") priorityKeys["✌️"] = EmojiDict["✌️"];
+            if (searchBox.Text == "b") priorityKeys["💔"] = EmojiDict["💔"];
+            if (searchBox.Text == "w") priorityKeys["🥀"] = EmojiDict["🥀"];
+
+            foreach (KeyValuePair<string, Emoji> kvp in priorityKeys) FilteredEmojis.Add(kvp);
+
+            foreach (KeyValuePair<string, Emoji> kvp in string.IsNullOrWhiteSpace(search)
                      ? Emojis
-                     : Emojis.Where(kvp => kvp.Value.Name.Contains(searchBox.Text, StringComparison.OrdinalIgnoreCase)))
+                     : Emojis.Where(k => k.Value.Name.Contains(search, StringComparison.OrdinalIgnoreCase)))
             {
-                FilteredEmojis.Add(kvp);
+                if (!priorityKeys.ContainsKey(kvp.Key)) FilteredEmojis.Add(kvp);
             }
         }
-        
+
+
         private void emojiView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (emojiView.SelectedItem is KeyValuePair<string, Emoji> kvp)
