@@ -61,12 +61,15 @@ namespace emoji_picker_wpf
         {
             InitializeComponent();
             _previousWindow = GetForegroundWindow();
+
             DataContext = this;
             searchBox.Focus();
 
             Loaded += async (s, e) =>
             {
                 nint hwnd = new WindowInteropHelper(this).Handle;
+                GetCursorPos(out POINT cursor);
+                MoveWindow(hwnd, cursor.X, cursor.Y, (int)this.ActualWidth, (int)this.ActualHeight, true);
 
                 if (_config.BackdropMode == BackdropMode.Extend)
                 {

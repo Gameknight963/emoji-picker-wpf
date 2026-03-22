@@ -12,6 +12,10 @@ namespace emoji_picker_wpf
         [DllImport("user32.dll")] internal static extern int SetWindowCompositionAttribute(IntPtr hwnd, ref WindowCompositionAttributeData data);
         [DllImport("dwmapi.dll")] internal static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
         [DllImport("dwmapi.dll")] internal static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS pMarInset);
+        [DllImport("user32.dll")] internal static extern bool GetCaretPos(out POINT lpPoint);
+        [DllImport("user32.dll")] internal static extern bool ClientToScreen(IntPtr hWnd, ref POINT lpPoint);
+        [DllImport("user32.dll")] internal static extern bool GetCursorPos(out POINT lpPoint);
+        [DllImport("user32.dll")] internal static extern bool MoveWindow(IntPtr hWnd, int X, int Y, int nWidth, int nHeight, bool bRepaint);
 
         internal const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
         internal const int DWMWA_CAPTION_COLOR = 35;
@@ -27,5 +31,8 @@ namespace emoji_picker_wpf
 
         [StructLayout(LayoutKind.Sequential)]
         internal struct WindowCompositionAttributeData { public int Attribute; public IntPtr Data; public int SizeOfData; }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct POINT { public int X, Y; }
     }
 }
