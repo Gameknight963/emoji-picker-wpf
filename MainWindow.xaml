@@ -45,7 +45,8 @@
                     <emoji:TextBlock Text="{Binding Key}" 
                                      FontSize="32" 
                                      HorizontalAlignment="Center" 
-                                     VerticalAlignment="Center"/>
+                                     VerticalAlignment="Center"
+                                     ToolTip="{Binding Value.Name}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
