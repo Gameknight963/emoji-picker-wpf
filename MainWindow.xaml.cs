@@ -11,6 +11,8 @@ namespace emoji_picker_wpf
 {
     public partial class MainWindow : Window
     {
+        private AppConfig _config = AppConfig.Load();
+
         private IntPtr _previousWindow;
         public IReadOnlyList<KeyValuePair<string, Emoji>> Emojis { get; private set; } = Array.Empty<KeyValuePair<string, Emoji>>();
         public IReadOnlyDictionary<string, Emoji> EmojiDict { get; private set; } = new Dictionary<string, Emoji>();
@@ -66,9 +68,15 @@ namespace emoji_picker_wpf
             {
                 nint hwnd = new WindowInteropHelper(this).Handle;
 
-                MARGINS margins = new MARGINS { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
-                DwmExtendFrameIntoClientArea(hwnd, ref margins);
-                EnableBlur();
+                if (_config.BackdropMode == BackdropMode.Extend)
+                {
+                    MARGINS margins = new MARGINS { cxLeftWidth = -1, cxRightWidth = -1, cyTopHeight = -1, cyBottomHeight = -1 };
+                    DwmExtendFrameIntoClientArea(hwnd, ref margins);
+                }
+                else if (_config.BackdropMode == BackdropMode.Acrylic)
+                {
+                    EnableBlur();
+                }
 
                 int dark = 1;
                 DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, ref dark, sizeof(int));
