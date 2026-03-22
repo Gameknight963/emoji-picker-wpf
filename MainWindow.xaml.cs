@@ -28,7 +28,7 @@ namespace emoji_picker_wpf
         static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
         [DllImport("kernel32.dll")]
         static extern uint GetCurrentThreadId();
-
+        
         // balls
         public void ForceForeground()
         {
@@ -69,6 +69,7 @@ namespace emoji_picker_wpf
             {
                 ForceForeground();
                 searchBox.Focus();
+                this.Topmost = true;
             };
         }
           
@@ -105,6 +106,15 @@ namespace emoji_picker_wpf
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             if (e.Key == Key.Escape) this.Close();
+            if (e.Key == Key.Enter)
+            {
+                if (emojiView.Items.Count == 0) return;
+                if (emojiView.Items[0] is KeyValuePair<string, Emoji> kvp)
+                {
+                    InsertEmoji(kvp.Key);
+                    this.Close();
+                }
+            }
         }
     }
 }
